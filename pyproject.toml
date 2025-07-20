@@ -1,0 +1,7 @@
+[project]
+name = "newsfeed"
+version = "0.1.0"
+description = "A real-time newsfeed aggregation system"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
