@@ -3,6 +3,7 @@
 import requests
 import feedparser
 from newsfeed.ingestion.event import Event
+from utils.helpers import convert_structtime_to_dt
 
 
 def fetch(source_config) -> list[Event]:
@@ -37,7 +38,7 @@ def fetch(source_config) -> list[Event]:
                 source=source_config["name"],
                 title=entry.get("title"),
                 body=content,
-                published_at=entry.get("published")
+                published_at=convert_structtime_to_dt(entry.get("published_parsed"))
             )
         )
 
