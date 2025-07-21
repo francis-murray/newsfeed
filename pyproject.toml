@@ -4,4 +4,20 @@ version = "0.1.0"
 description = "A real-time newsfeed aggregation system"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "feedparser>=6.0.11",
+    "praw>=7.8.1",
+    "pytest>=8.4.1",
+    "pytest-mock>=3.14.1",
+    "python-dotenv>=1.1.1",
+    "pyyaml>=6.0.2",
+]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = [
+    "tests/unit",
+    "tests/integration",
+    "tests/e2e"
+]
