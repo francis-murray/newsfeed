@@ -2,16 +2,16 @@
 - name: "Sysadmin"
   type: "reddit"
   subreddit_name: "sysadmin"
-  limit: 2
+  limit: 10
 
 - name: "Ars Technica"
   type: "rss"
   url: "https://feeds.arstechnica.com/arstechnica/index"
-  limit: 2
+  limit: 10
 
 - name: "Tom's Hardware"
   type: "rss"
   url: "https://www.tomshardware.com/feeds.xml"
-  limit: 2
+  limit: 10
 
 

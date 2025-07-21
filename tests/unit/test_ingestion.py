@@ -1,13 +1,16 @@
 import pytest
 from newsfeed.ingestion import reddit, rss
 from newsfeed.ingestion.event import Event
+import time
+from datetime import datetime
+import zoneinfo
+
 
 def test_fetch_reddit(mocker):
     # Test flow: 
     #    1. Mock Reddit Posts 
     #    2. Mock Subreddit w/ mock Posts 
     #    3. Patch Reddit client containing mock Subreddit
-    #    4. Patch datetime converter
 
     # 1. Mock individual Reddit posts
     mock_post_1 = mocker.Mock()
@@ -30,15 +33,6 @@ def test_fetch_reddit(mocker):
     mock_reddit = mocker.patch("newsfeed.ingestion.reddit.reddit")
     mock_reddit.subreddit.return_value = mock_subreddit
 
-    # 4. Patch helpers.convert_ts_to_dt to return mock timestamps
-    # Use side_effect to return different timestamps for each post,
-    # since fetch() calls convert_ts_to_dt once per post inside a loop.
-    mock_helpers = mocker.patch("newsfeed.ingestion.reddit.helpers")
-    mock_helpers.convert_ts_to_dt.side_effect = [
-        (2025, 7, 18, 12, 1, 12, "Europe/Zurich"),  # for post 1
-        (2026, 1, 1, 1, 0, 0, "Europe/Zurich")      # for post 2
-    ]
-
     source_config = {"name": "Sysadmin", "subreddit_name": "sysadmin", "limit": 2}
     events = reddit.fetch(source_config)
 
@@ -50,12 +44,14 @@ def test_fetch_reddit(mocker):
     assert events[0].source == "Sysadmin"
     assert events[0].title == "Test Title 1"
     assert events[0].body == "Test Body 1"
-    assert events[0].published_at == (2025, 7, 18, 12, 1, 12, "Europe/Zurich")
+    assert events[0].published_at == datetime(2025, 7, 18, 12, 1, 12, 
+                                    tzinfo=zoneinfo.ZoneInfo("Europe/Zurich"))
 
     assert events[1].id == "bcd234"
     assert events[1].title == "Test Title 2"
     assert events[1].body == "Test Body 2"
-    assert events[1].published_at == (2026, 1, 1, 1, 0, 0, "Europe/Zurich")
+    assert events[1].published_at == datetime(2026, 1, 1, 1, 0, 0, 
+                                    tzinfo=zoneinfo.ZoneInfo("Europe/Zurich"))
 
 
 def test_fetch_rss(mocker):
@@ -69,21 +65,25 @@ def test_fetch_rss(mocker):
         "id": "rss123",
         "title": "RSS Title 1",
         "content": [{"value": "Content 1"}],
-        "published": "2024-12-01T10:00:00Z"
+        # "published": "Fri, 18 Jul 2025 10:00:00 +0000",
+        "published_parsed": time.struct_time((2025, 7, 18, 10, 0, 0, 4, 199, 0))
     }
 
     entry_2 = {
         "id": "rss456",
         "title": "RSS Title 2",
         "dc_content": "Content 2",
-        "published": "2025-01-15T12:30:00Z"
+        # "published": "Sat, 19 Jul 2025 13:40:01 +0000",
+        "published_parsed": time.struct_time((2025, 7, 19, 13, 40, 1, 5, 200, 0))
+
     }
 
     entry_3 = {
         "id": "rss789",
         "title": "RSS Title 3",
         "description": "Content 3",
-        "published": "2025-02-20T08:15:00Z"
+        # "published": "Mon, 21 Jul 2025 10:07:25 +0000",
+        "published_parsed": time.struct_time((2025, 7, 21, 10, 7, 25, 0, 202, 0))
     }
 
     # 2. Patch feedparser.parse to return mock entries
@@ -111,10 +111,15 @@ def test_fetch_rss(mocker):
     assert events[0].id == "rss123"
     assert events[0].title == "RSS Title 1"
     assert events[0].body == "Content 1"
-    assert events[0].published_at == "2024-12-01T10:00:00Z"
+    assert events[0].published_at == datetime(2025, 7, 18, 10, 0, 0, 
+                            tzinfo=zoneinfo.ZoneInfo("America/Los_Angeles"))
 
     assert events[1].id == "rss456"
     assert events[1].body == "Content 2"
+    assert events[1].published_at == datetime(2025, 7, 19, 13, 40, 1, 
+                            tzinfo=zoneinfo.ZoneInfo("America/Los_Angeles"))
 
     assert events[2].id == "rss789"
     assert events[2].body == "Content 3"
+    assert events[2].published_at == datetime(2025, 7, 21, 10, 7, 25, 
+                            tzinfo=zoneinfo.ZoneInfo("America/Los_Angeles"))
