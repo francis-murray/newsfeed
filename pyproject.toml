@@ -5,6 +5,7 @@ description = "A real-time newsfeed aggregation system"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "fastapi[standard]>=0.116.1",
     "feedparser>=6.0.11",
     "praw>=7.8.1",
     "pytest>=8.4.1",
