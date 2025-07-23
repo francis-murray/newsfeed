@@ -4,8 +4,15 @@
 
 from fastapi import FastAPI, status
 from newsfeed.ingestion.event import Event
+from newsfeed.config.loader import load_keywords_config
 from newsfeed.processing.filter import keyword_based_filter
-from newsfeed.processing.rank import sort_events_by_date
+from newsfeed.processing.rank import rank_events
+from newsfeed.utils.logging_config import setup_logging
+import pprint
+import logging
+
+setup_logging()
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Newsfeed API",
@@ -23,6 +30,7 @@ async def root():
     Returns:
         dict[str, str]: A simple welcome message to verify the API is reachable.
     """
+    logger.info('API Root endpoint called')
     return {"message": "Hello World"}
 
 
@@ -45,14 +53,30 @@ async def ingest(raw_events: list[Event]) -> dict[str, str]:
     Returns:
         dict[str, str]: The call returns an acknowledgment (HTTP 200 / successful exit status / ACK message).
     """
-    keywords = ["outage", "breach", "vulnerability", "exploit", "incident", "security",
-                "cybersecurity", "critical", "down", "downtime", "emergency", "breaking", "bug", 
-                "disruption", "patch", "ransomware", "zero-day", "mitigation", "CVE"]
+    logger.info('API /ingest endpoint called')
+    logger.info(f"Number of raw events to ingest: {len(raw_events)}")
+    logger.debug(f"Event details:\n{pprint.pformat(raw_events, indent=2, width=80)}")
+
+    # Load keyword configuration from YAML file
+    keywords_config = load_keywords_config()
+    high_priority_keywords = keywords_config['high_priority_keywords']
+    medium_priority_keywords = keywords_config['medium_priority_keywords']
+    low_priority_keywords = keywords_config['low_priority_keywords']
+
+    all_keywords = high_priority_keywords + medium_priority_keywords + low_priority_keywords
     
-    filtered_events = keyword_based_filter(raw_events, keywords)
-    sorted_filtered_events = sort_events_by_date(filtered_events)
+    filtered_events_with_counts = keyword_based_filter(raw_events, all_keywords)
+    sorted_events_with_score = rank_events(filtered_events_with_counts, 
+                                        high_priority_keywords,
+                                        medium_priority_keywords,
+                                        low_priority_keywords)
+    logger.debug(f"Relevant events ranked by score:\n{pprint.pformat(sorted_events_with_score, indent=2, width=80)}")
+
+    sorted_filtered_events = [event_with_score["event"] for event_with_score in sorted_events_with_score]
+
     stored_events.clear() # Replaces memory on each ingest
     stored_events.extend(sorted_filtered_events)
+    
     return {"message": "ACK", "status": "successful exit"}
 
 
@@ -70,5 +94,9 @@ def retrieve() -> list[Event]:
     Returns:
         list[Event]: The call returns the stored events.
     """
+    logger.info('API /retrieve endpoint called')
+    logger.info(f"Number of stored events: {len(stored_events)}")
+    logger.debug(f"Stored events details:\n{pprint.pformat(stored_events, indent=2, width=80)}")
+
     return stored_events
 

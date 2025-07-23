@@ -21,3 +21,6 @@ logs/*
 
 # Visual Studio Code files
 .vscode/settings.json
+
+# Local dev scripts
+.clean_pycache_script.py

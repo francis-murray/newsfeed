@@ -20,7 +20,12 @@ reddit = praw.Reddit(client_id=os.getenv("REDDIT_CLIENT_ID"),
 def fetch(source_config) -> list[Event]:
     """Fetches posts from a subreddit and returns a list of Event objects."""
     subreddit = reddit.subreddit(source_config["subreddit_name"])
-    limit = source_config.get("limit", 5)
+    limit = source_config.get("limit", None)
+    
+    if limit:
+        print(f"Fetching {limit} posts from {source_config['name']}...")
+    else: 
+        print(f"Fetching all posts from {source_config['name']}...")
 
     events = []
     for post in subreddit.new(limit=limit): 

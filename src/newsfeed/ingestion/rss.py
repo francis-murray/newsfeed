@@ -10,7 +10,13 @@ def fetch(source_config) -> list[Event]:
     """Fetches entries from a rss feed and returns a list of Event objects."""
     response = requests.get(source_config['url'])
     parsed_feed = feedparser.parse(response.content)
-    limit = source_config.get("limit", 5)
+    limit = source_config.get("limit", None)
+
+
+    if limit:
+        print(f"Fetching {limit} posts from {source_config['name']}...")
+    else: 
+        print(f"Fetching all posts from {source_config['name']}...")
 
     events = []
     for entry in parsed_feed['entries'][:limit]:

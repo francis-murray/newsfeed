@@ -3,7 +3,6 @@ from datetime import datetime
 from newsfeed.ingestion.event import Event
 from newsfeed.processing.aggregate import fetch_and_aggregate_events
 from newsfeed.processing.filter import keyword_based_filter
-from newsfeed.processing.rank import sort_events_by_date
 
 
 def test_fetch_and_aggregate_events(mocker):
@@ -49,27 +48,8 @@ def test_keyword_based_filter():
     
     keywords = ["security", "breach", "outage", "vulnerability"]
     
-    filtered_events = keyword_based_filter(events, keywords)
+    filtered_events_with_counts = keyword_based_filter(events, keywords)
     
-    assert len(filtered_events) == 2  # Events id1 and id3 should match the keywords
-    assert filtered_events[0].id == "id1"  # Has "security" and "breach" in title, "vulnerability" in body
-    assert filtered_events[1].id == "id3"  # Has "outage" in title
-
-
-def test_sort_events_by_date():
-    """Test that sort_events_by_date sorts events by date in descending order."""
-    events = [
-        Event("id1", "test", "Old Event", datetime(2025, 1, 1)),
-        Event("id2", "test", "Newest Event", datetime(2025, 1, 3)),
-        Event("id3", "test", "Middle Event", datetime(2025, 1, 2))
-    ]
-    
-    sorted_events = sort_events_by_date(events)
-    
-    assert len(sorted_events) == 3
-    assert sorted_events[0].id == "id2"  # Newest (Jan 3)
-    assert sorted_events[1].id == "id3"  # Middle (Jan 2)
-    assert sorted_events[2].id == "id1"  # Oldest (Jan 1)
-    
-    # Verify dates are in descending order
-    assert sorted_events[0].published_at > sorted_events[1].published_at > sorted_events[2].published_at
+    assert len(filtered_events_with_counts) == 2  # Events id1 and id3 should match the keywords
+    assert filtered_events_with_counts[0]['event'].id == "id1"  # Has "security" and "breach" in title, "vulnerability" in body
+    assert filtered_events_with_counts[1]['event'].id == "id3"  # Has "outage" in title

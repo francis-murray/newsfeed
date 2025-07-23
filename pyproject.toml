@@ -7,6 +7,7 @@ requires-python = ">=3.12"
 dependencies = [
     "fastapi[standard]>=0.116.1",
     "feedparser>=6.0.11",
+    "html2text>=2025.4.15",
     "praw>=7.8.1",
     "pytest>=8.4.1",
     "pytest-mock>=3.14.1",
@@ -22,3 +23,9 @@ testpaths = [
     "tests/integration",
     "tests/e2e"
 ]
+
+# Enable log display in terminal during tests
+log_cli = false
+log_cli_level = "INFO"
+log_cli_format = "%(asctime)s [%(levelname)8s] %(name)s: %(message)s"
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"

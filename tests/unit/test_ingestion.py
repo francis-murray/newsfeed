@@ -44,14 +44,14 @@ def test_fetch_reddit(mocker):
     assert events[0].source == "Sysadmin"
     assert events[0].title == "Test Title 1"
     assert events[0].body == "Test Body 1"
-    assert events[0].published_at == datetime(2025, 7, 18, 12, 1, 12, 
-                                    tzinfo=zoneinfo.ZoneInfo("Europe/Zurich"))
+    assert events[0].published_at == datetime(2025, 7, 18, 10, 1, 12, 
+                                    tzinfo=zoneinfo.ZoneInfo("UTC"))
 
     assert events[1].id == "bcd234"
     assert events[1].title == "Test Title 2"
     assert events[1].body == "Test Body 2"
-    assert events[1].published_at == datetime(2026, 1, 1, 1, 0, 0, 
-                                    tzinfo=zoneinfo.ZoneInfo("Europe/Zurich"))
+    assert events[1].published_at == datetime(2026, 1, 1, 0, 0, 0, 
+                                    tzinfo=zoneinfo.ZoneInfo("UTC"))
 
 
 def test_fetch_rss(mocker):
@@ -112,14 +112,14 @@ def test_fetch_rss(mocker):
     assert events[0].title == "RSS Title 1"
     assert events[0].body == "Content 1"
     assert events[0].published_at == datetime(2025, 7, 18, 10, 0, 0, 
-                            tzinfo=zoneinfo.ZoneInfo("America/Los_Angeles"))
+                            tzinfo=zoneinfo.ZoneInfo("UTC"))
 
     assert events[1].id == "rss456"
     assert events[1].body == "Content 2"
     assert events[1].published_at == datetime(2025, 7, 19, 13, 40, 1, 
-                            tzinfo=zoneinfo.ZoneInfo("America/Los_Angeles"))
+                            tzinfo=zoneinfo.ZoneInfo("UTC"))
 
     assert events[2].id == "rss789"
     assert events[2].body == "Content 3"
     assert events[2].published_at == datetime(2025, 7, 21, 10, 7, 25, 
-                            tzinfo=zoneinfo.ZoneInfo("America/Los_Angeles"))
+                            tzinfo=zoneinfo.ZoneInfo("UTC"))

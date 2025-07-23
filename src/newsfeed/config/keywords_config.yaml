@@ -1,0 +1,47 @@
+# Keyword configuration for news filtering and ranking
+# Keywords are used to determine event importance and relevance
+
+high_priority_keywords:
+  # Critical system issues requiring immediate attention
+  - "outage"
+  - "breach" 
+  - "critical"
+  - "ransomware"
+  - "exploit"
+  - "downtime"
+  - "urgent"
+  - "vulnerability"
+  - "compromise"
+  - "incident"
+  - "failure"
+  - "emergency"
+
+medium_priority_keywords:
+  # Important updates and security-related items
+  - "patch"
+  - "update"
+  - "security"
+  - "alert"
+  - "maintenance"
+  - "warning"
+  - "issue"
+  - "fix"
+  - "downgrade"
+  - "backup"
+  - "firewall"
+  - "authentication"
+  - "dns"
+  - "latency"
+
+low_priority_keywords:
+  # General information and announcements
+  - "info"
+  - "announcement"
+  - "feature"
+  - "release"
+  - "news"
+  - "notice"
+  - "change"
+  - "roadmap"
+  - "upgrade"
+  - "version"
