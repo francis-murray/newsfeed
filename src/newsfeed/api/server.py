@@ -53,16 +53,7 @@ async def ingest(raw_events: list[Event]) -> dict[str, str]:
     logger.info('API /ingest endpoint called')
     logger.info(f"Number of raw events to ingest: {len(raw_events)}")
     logger.debug(f"Event details:\n{pprint.pformat(raw_events, indent=2, width=80)}")
-
-    # Enforce uniqueness of event IDs within the batch
-    # ids = [event.id for event in raw_events]
-    # if len(ids) != len(set(ids)):
-    #     logger.error("Duplicate event IDs detected in batch.")
-    #     raise HTTPException(
-    #         status_code=status.HTTP_400_BAD_REQUEST,
-    #         detail="Duplicate event IDs found in ingestion batch."
-    #     )
-
+    
     skipped_ids = []
     accepted_events = []
     batch_seen_ids_set = set()

@@ -8,8 +8,6 @@ high_priority_keywords:
   - "critical"
   - "ransomware"
   - "exploit"
-  - "downtime"
-  - "urgent"
   - "vulnerability"
   - "compromise"
   - "incident"
@@ -31,7 +29,6 @@ medium_priority_keywords:
   - "backup"
   - "firewall"
   - "authentication"
-  - "latency"
   - "virus"
   - "trojan"
 
@@ -39,11 +36,8 @@ low_priority_keywords:
   # General information and announcements
   - "info"
   - "announcement"
-  - "feature"
   - "release"
-  - "news"
   - "notice"
-  - "change"
   - "roadmap"
   - "upgrade"
   - "version"
