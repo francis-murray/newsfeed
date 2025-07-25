@@ -4,9 +4,9 @@
 
 from fastapi import FastAPI, status
 from newsfeed.ingestion.event import Event
+from newsfeed.ingestion.store import store
 from newsfeed.config.loader import load_keywords_config
 from newsfeed.processing.filter import keyword_based_filter
-from newsfeed.processing.rank import rank_events
 from newsfeed.utils.logging_config import setup_logging
 import pprint
 import logging
@@ -18,9 +18,6 @@ app = FastAPI(
     title="Newsfeed API",
     description="Real-time newsfeed system for IT-related news aggregation",
 )
-
-# In-memory storage for events (cleared and overwritten on each new ingestion)
-stored_events: list[Event] = []
 
 @app.get("/")
 async def root():
@@ -57,25 +54,43 @@ async def ingest(raw_events: list[Event]) -> dict[str, str]:
     logger.info(f"Number of raw events to ingest: {len(raw_events)}")
     logger.debug(f"Event details:\n{pprint.pformat(raw_events, indent=2, width=80)}")
 
+    # Enforce uniqueness of event IDs within the batch
+    # ids = [event.id for event in raw_events]
+    # if len(ids) != len(set(ids)):
+    #     logger.error("Duplicate event IDs detected in batch.")
+    #     raise HTTPException(
+    #         status_code=status.HTTP_400_BAD_REQUEST,
+    #         detail="Duplicate event IDs found in ingestion batch."
+    #     )
+
+    skipped_ids = []
+    accepted_events = []
+    batch_seen_ids_set = set()
+    for event in raw_events:
+        # check for duplicate ids in current batch
+        if event.id in batch_seen_ids_set:
+            logger.warning(f"Duplicate ID in batch: {event.id}. Skipping it.")
+            skipped_ids.append(event.id)
+            continue
+        # check for duplicate ids in store
+        if store.has_event(event.id):
+            logger.warning(f"Event with id {event.id} already exists in store. Skipping it.")
+            skipped_ids.append(event.id)
+            continue
+        accepted_events.append(event)
+        print(f"Accepted event id: {event.id}")
+        batch_seen_ids_set.add(event.id)
+
     # Load keyword configuration from YAML file
     keywords_config = load_keywords_config()
     high_priority_keywords = keywords_config['high_priority_keywords']
     medium_priority_keywords = keywords_config['medium_priority_keywords']
     low_priority_keywords = keywords_config['low_priority_keywords']
-
     all_keywords = high_priority_keywords + medium_priority_keywords + low_priority_keywords
     
-    filtered_events_with_counts = keyword_based_filter(raw_events, all_keywords)
-    sorted_events_with_score = rank_events(filtered_events_with_counts, 
-                                        high_priority_keywords,
-                                        medium_priority_keywords,
-                                        low_priority_keywords)
-    logger.debug(f"Relevant events ranked by score:\n{pprint.pformat(sorted_events_with_score, indent=2, width=80)}")
-
-    sorted_filtered_events = [event_with_score["event"] for event_with_score in sorted_events_with_score]
-
-    stored_events.clear() # Replaces memory on each ingest
-    stored_events.extend(sorted_filtered_events)
+    filtered_events_with_counts = keyword_based_filter(accepted_events, all_keywords)
+    print(f"Number of filtered events: {len(filtered_events_with_counts)}")
+    store.add_events(filtered_events_with_counts)
     
     return {"message": "ACK", "status": "successful exit"}
 
@@ -95,8 +110,15 @@ def retrieve() -> list[Event]:
         list[Event]: The call returns the stored events.
     """
     logger.info('API /retrieve endpoint called')
-    logger.info(f"Number of stored events: {len(stored_events)}")
-    logger.debug(f"Stored events details:\n{pprint.pformat(stored_events, indent=2, width=80)}")
 
-    return stored_events
+    sorted_events_with_score = store.get_sorted_events()
+
+    logger.debug(f"Relevant events ranked by score:\n{pprint.pformat(sorted_events_with_score, indent=2, width=80)}")
+
+    sorted_filtered_events = [event_with_score["event"] for event_with_score in sorted_events_with_score]
+    logger.debug(f"Number of stored events: {store.get_event_count()}")
+    logger.info(f"Number of returned events: {len(sorted_filtered_events)}")
+    logger.debug(f"Returned sorted filtered events details:\n{pprint.pformat(sorted_filtered_events, indent=2, width=80)}")
+
+    return sorted_filtered_events
 

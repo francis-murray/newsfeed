@@ -15,11 +15,12 @@ high_priority_keywords:
   - "incident"
   - "failure"
   - "emergency"
+  - "identity theft"
+  - "hijacking"
 
 medium_priority_keywords:
   # Important updates and security-related items
   - "patch"
-  - "update"
   - "security"
   - "alert"
   - "maintenance"
@@ -30,8 +31,9 @@ medium_priority_keywords:
   - "backup"
   - "firewall"
   - "authentication"
-  - "dns"
   - "latency"
+  - "virus"
+  - "trojan"
 
 low_priority_keywords:
   # General information and announcements
